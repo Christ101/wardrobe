@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import AuthGuard from '@/components/AuthGuard';
 import Navbar from '@/components/Navbar';
 import { getItems, createItem, updateItem, deleteItem, Item, ItemCategory, ItemStatus } from '@/lib/db/items';
 import { uploadImage, getSignedUrl, deleteImage } from '@/lib/storage';
 import { createClient } from '@/lib/supabase/client';
+import { generateYAMLText, generateJSON, generateTXT, copyToClipboard, downloadFile } from '@/lib/export';
 
 export default function ItemsPage() {
   const [items, setItems] = useState<Item[]>([]);
@@ -15,6 +16,8 @@ export default function ItemsPage() {
   const [filterCategory, setFilterCategory] = useState<ItemCategory | ''>('');
   const [filterStatus, setFilterStatus] = useState<ItemStatus | ''>('');
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const exportMenuRef = useRef<HTMLDivElement>(null);
 
   const formData = {
     category: 'top' as ItemCategory,
@@ -32,6 +35,57 @@ export default function ItemsPage() {
   useEffect(() => {
     loadItems();
   }, [filterCategory, filterStatus]);
+
+  // 点击外部关闭导出菜单
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(event.target as Node)) {
+        setShowExportMenu(false);
+      }
+    };
+
+    if (showExportMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showExportMenu]);
+
+  const handleExportCopy = async () => {
+    try {
+      const allItems = await getItems(); // 获取所有单品，不受筛选影响
+      const text = generateYAMLText(allItems);
+      await copyToClipboard(text);
+      alert('已复制到剪贴板！');
+      setShowExportMenu(false);
+    } catch (error: any) {
+      alert(`导出失败: ${error.message}`);
+    }
+  };
+
+  const handleExportJSON = async () => {
+    try {
+      const allItems = await getItems(); // 获取所有单品，不受筛选影响
+      const json = generateJSON(allItems);
+      downloadFile(json, 'wardrobe-export.json', 'application/json');
+      setShowExportMenu(false);
+    } catch (error: any) {
+      alert(`导出失败: ${error.message}`);
+    }
+  };
+
+  const handleExportTXT = async () => {
+    try {
+      const allItems = await getItems(); // 获取所有单品，不受筛选影响
+      const txt = generateTXT(allItems);
+      downloadFile(txt, 'wardrobe-export.txt', 'text/plain');
+      setShowExportMenu(false);
+    } catch (error: any) {
+      alert(`导出失败: ${error.message}`);
+    }
+  };
 
   const loadItems = async () => {
     setLoading(true);
@@ -165,16 +219,49 @@ export default function ItemsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-gray-900">单品库</h1>
-            <button
-              onClick={() => {
-                setEditingItem(null);
-                setForm(formData);
-                setShowModal(true);
-              }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              新增单品
-            </button>
+            <div className="flex gap-3">
+              {/* 导出按钮 */}
+              <div className="relative" ref={exportMenuRef}>
+                <button
+                  onClick={() => setShowExportMenu(!showExportMenu)}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+                >
+                  导出
+                </button>
+                {showExportMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                    <button
+                      onClick={handleExportCopy}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-t-md"
+                    >
+                      复制文本
+                    </button>
+                    <button
+                      onClick={handleExportJSON}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      下载 JSON
+                    </button>
+                    <button
+                      onClick={handleExportTXT}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-b-md"
+                    >
+                      下载 TXT
+                    </button>
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => {
+                  setEditingItem(null);
+                  setForm(formData);
+                  setShowModal(true);
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                新增单品
+              </button>
+            </div>
           </div>
 
           {/* 筛选 */}

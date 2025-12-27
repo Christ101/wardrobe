@@ -14,7 +14,7 @@ export interface Item {
   color_secondary?: string;
   size?: string;
   status: ItemStatus;
-  care_tags?: string;
+  care_tags?: string | string[]; // 支持字符串或数组
   image_path?: string;
   created_at?: string;
   updated_at?: string;
@@ -43,7 +43,15 @@ export async function getItems(filters?: {
     throw new Error(`获取单品失败: ${error.message}`);
   }
 
-  return data || [];
+  // 处理 care_tags：如果是数组，转换为字符串（用逗号分隔）
+  const processedData = (data || []).map((item: any) => ({
+    ...item,
+    care_tags: Array.isArray(item.care_tags) 
+      ? item.care_tags.join(', ') 
+      : item.care_tags,
+  }));
+
+  return processedData;
 }
 
 export async function getItem(id: string): Promise<Item | null> {
@@ -61,6 +69,13 @@ export async function getItem(id: string): Promise<Item | null> {
     throw new Error(`获取单品失败: ${error.message}`);
   }
 
+  // 处理 care_tags：如果是数组，转换为字符串（用逗号分隔）
+  if (data) {
+    data.care_tags = Array.isArray(data.care_tags) 
+      ? data.care_tags.join(', ') 
+      : data.care_tags;
+  }
+
   return data;
 }
 
@@ -72,10 +87,16 @@ export async function createItem(item: Omit<Item, 'id' | 'owner_id' | 'created_a
     throw new Error('未登录');
   }
 
+  // 处理 care_tags：如果是字符串，转换为数组；如果是数组，保持原样
+  const careTags = item.care_tags 
+    ? (typeof item.care_tags === 'string' ? [item.care_tags] : item.care_tags)
+    : undefined;
+
   const { data, error } = await supabase
     .from('items')
     .insert({
       ...item,
+      care_tags: careTags,
       owner_id: user.id,
     })
     .select()
@@ -90,9 +111,18 @@ export async function createItem(item: Omit<Item, 'id' | 'owner_id' | 'created_a
 
 export async function updateItem(id: string, updates: Partial<Item>): Promise<Item> {
   const supabase = createClient();
+  
+  // 处理 care_tags：如果是字符串，转换为数组；如果是数组，保持原样
+  const processedUpdates = { ...updates };
+  if (processedUpdates.care_tags !== undefined) {
+    processedUpdates.care_tags = typeof processedUpdates.care_tags === 'string' 
+      ? [processedUpdates.care_tags] 
+      : processedUpdates.care_tags;
+  }
+
   const { data, error } = await supabase
     .from('items')
-    .update(updates)
+    .update(processedUpdates)
     .eq('id', id)
     .select()
     .single();
