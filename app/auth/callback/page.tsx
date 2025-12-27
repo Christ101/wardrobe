@@ -4,6 +4,9 @@ import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
+// Force dynamic rendering to avoid static generation issues
+export const dynamic = 'force-dynamic';
+
 function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
