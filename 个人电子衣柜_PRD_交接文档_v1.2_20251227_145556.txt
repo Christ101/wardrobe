@@ -1,0 +1,159 @@
+个人电子衣柜系统（Next.js + Supabase + PWA）
+任务需求 / 交接文档（TXT 版）
+版本：v1.2
+日期：2025-12-27
+
+================================
+1. 背景
+================================
+- 目标：搭建“个人电子衣柜”Web 应用，只供 Ryan 个人使用。
+- 需求特点：0 基础可用、快速上线、可随时扩展；衣物图片需支持上传/预览；支持分层搭配和一周穿搭计划。
+
+================================
+2. 目标（P0 必做）
+================================
+P0 功能目标：
+1) 登录：邮箱 Magic Link/OTP 登录（Supabase Auth）。
+2) 单品库：新增/编辑/删除衣物；支持图片上传；支持筛选与分类；记录尺码/颜色/洗涤等信息。
+3) 分层搭配器：从单品库按“base/mid/outer/bottom/shoes/socks/accessory”选择单品组成 Outfit；保存/查看 Outfit。
+4) 一周计划：按日期（周视图）为每天选择一个 Outfit；支持备注；可快速替换。
+5) 待洗提示：单品状态为 laundry 时，在搭配器/周计划中给出提示（例如角标或提醒条）。
+
+================================
+3. 范围（P0 的页面与数据）
+================================
+页面（建议 Next.js App Router）：
+- /login
+- /items           单品库（Gallery/列表 + 筛选）
+- /builder         分层搭配器（选择单品 -> 生成 Outfit）
+- /outfits         Outfit 列表与详情
+- /calendar        周计划（7 天视图）
+（可选）/test-storage  最小上传/预览测试页（用于验证 bucket/policy）
+
+数据表（已在 Supabase 建好）：
+- public.items
+- public.outfits
+- public.outfit_items
+- public.plans
+
+说明：表已启用 RLS（Row Level Security），必须按 owner_id = auth.uid() 写入/读取。
+
+================================
+4. 非目标（本阶段不做）
+================================
+- 多用户/团队协作
+- AI 自动推荐穿搭（后续可加）
+- 复杂的衣物识别/抠图/自动标签
+- 第三方天气接口自动联动（后续可加）
+
+================================
+5. 权限与安全（强约束）
+================================
+5.1 仅 Ryan 个人使用（不做白名单版本的最省事方案）
+- 开发/上线初期：允许注册开启。
+- Ryan 首次登录成功（创建用户记录）后：在 Supabase 关闭“允许新用户注册”。
+- 这样无需在代码里写白名单，也无需提前告知 Ryan 邮箱。
+
+（可选双保险）
+- 登录时使用 shouldCreateUser=false，阻止陌生邮箱自动创建用户；或在前端加邮箱白名单校验（可后续）。
+
+5.2 RLS 约束（必须遵守）
+- 所有 insert/update 必须写 owner_id = auth.uid()，否则会被拒绝。
+- outfit_items 插入时，outfit_id / item_id 必须都属于本人（RLS 已加校验）。
+
+================================
+6. Storage（图片上传）强约束
+================================
+Supabase Storage：
+- Bucket：wardrobe（Private）
+- Bucket Policies：已按 authenticated + “仅允许访问自己路径”配置（SELECT/INSERT/UPDATE/DELETE）。
+
+代码必须遵守上传路径规范：
+- 上传 object path 必须以 {userId}/ 开头，例如：
+  {userId}/items/{itemId}.jpg
+否则会 403（policy 不匹配）。
+
+图片展示：
+- 建议使用 createSignedUrl（短时有效）来预览私有图片。
+
+================================
+7. 技术栈与工程要求
+================================
+- Next.js（建议 App Router，TypeScript）
+- @supabase/supabase-js
+- 部署：Vercel
+- 环境变量（Vercel/本地 .env.local）
+  NEXT_PUBLIC_SUPABASE_URL=...
+  NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+  （不使用 service role key；除非未来做后台任务，且必须只放服务端）
+
+工程要求：
+- 代码结构清晰：lib/supabaseClient, auth hooks, storage utils, db utils。
+- 统一错误提示：上传失败/权限不足/未登录等要给用户明确反馈。
+- 首屏可用：/items 和 /builder 优先完成。
+
+================================
+8. 交互与字段（P0 最小字段集）
+================================
+items（单品）最小字段：
+- id（uuid）
+- owner_id（uuid）
+- category（top/bottom/outer/shoes/socks/accessory）
+- layer（base/mid/outer，可空）
+- name（可空）
+- color_primary / color_secondary（可空）
+- size（可空）
+- status（clean/laundry/repair，默认 clean）
+- care_tags（可空）
+- image_path（Storage object path，可空）
+
+outfits（穿搭）最小字段：
+- id, owner_id
+- name（可空）
+- notes（可空）
+- cover_image_path（可空）
+
+outfit_items：
+- outfit_id, item_id, slot（base/mid/outer/bottom/shoes/socks/accessory）
+
+plans（周计划）：
+- plan_date（date）+ outfit_id（可空）+ notes（可空）
+- unique(owner_id, plan_date) 已启用：同一天默认只安排一套（如需多套可后续改）
+
+================================
+9. 验收标准（必须可演示）
+================================
+验收用例（按顺序）：
+1) 打开 /login，输入 Ryan 邮箱，收到邮件，点击链接后自动登录进入系统。
+2) /items：新增一件衣服（写 category/size/status），上传图片成功并可预览。
+3) /builder：从各层选择单品，保存为 Outfit；到 /outfits 能看到并点开详情。
+4) /calendar：给本周某一天选一个 Outfit，刷新页面后仍存在。
+5) 将某件单品 status 改为 laundry：在 builder 或 calendar 中出现“待洗”提示。
+
+================================
+10. 交付物清单（你需要交给 Ryan）
+================================
+- Vercel 线上地址（可访问）
+- 源码仓库（Git）
+- .env.example（只含变量名，不含密钥）
+- README（本地启动命令 + 部署步骤 + 常见问题）
+- （可选）/test-storage 最小测试页（用于未来排查 policy/路径问题）
+
+================================
+11. 推荐开发顺序（省时间）
+================================
+1) supabase client + /login（先跑通 session）
+2) /test-storage：上传 + list + signedUrl 预览（验证 bucket/policy/路径）
+3) /items：CRUD + 图片上传写入 image_path
+4) /builder：选择单品 -> 保存 outfits + outfit_items
+5) /calendar：plans CRUD + 7 天视图
+6) 细节：筛选、标签、待洗提示、UI 优化、PWA（可选）
+
+================================
+12. 备注（同机协作）
+================================
+- Ryan 已完成：建表 + RLS；Storage bucket + policies。
+- 你需要从 Ryan 获取：Supabase Project URL + anon key。
+- 暂不需要 Ryan 邮箱；上线后 Ryan 自己登录一次，再由 Ryan 关闭注册即可。
+
+（完）
