@@ -83,10 +83,6 @@ export default function LoginPage() {
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
-        // 禁用邮箱确认（因为已经在 Supabase 中关闭了）
-        emailRedirectOptions: {
-          skipBrowserRedirect: false,
-        },
       },
     });
 
