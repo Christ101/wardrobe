@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
-export default function CallbackPage() {
+function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -66,6 +66,21 @@ export default function CallbackPage() {
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
       </div>
     </div>
+  );
+}
+
+export default function CallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="text-gray-600 mb-2">加载中...</div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        </div>
+      </div>
+    }>
+      <CallbackContent />
+    </Suspense>
   );
 }
 
