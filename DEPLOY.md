@@ -124,12 +124,27 @@ git config --global user.name "张三"
 git config --global user.email "zhangsan@example.com"
 ```
 
+**⚠️ 重要：配置编码（避免中文乱码）**
+
+如果你使用中文提交信息，建议先配置 Git 编码，避免在 GitHub 上显示乱码：
+
+```bash
+# 设置提交信息编码为 UTF-8
+git config --global i18n.commitencoding utf-8
+
+# 设置日志输出编码为 UTF-8
+git config --global i18n.logoutputencoding utf-8
+```
+
+这个配置只需要设置一次，之后所有提交都会使用 UTF-8 编码。
+
 **重要提示：**
 
 - ✅ 这个配置只需要设置一次，之后所有 Git 操作都会使用这个身份
 - ✅ 邮箱建议使用 GitHub 账号邮箱，这样提交会正确关联到你的 GitHub 账号
 - ✅ 名字可以是任意名字，不一定要和 GitHub 用户名相同
 - ⚠️ 如果你已经配置过，可以跳过这一步，或者用上面的命令查看当前配置
+- ⚠️ **强烈建议**：配置编码后再提交，避免中文乱码问题
 
 ---
 
@@ -235,6 +250,39 @@ git commit -m "Initial commit: 个人电子衣柜系统"
 ```
 
 `-m` 后面的内容是提交信息，描述这次提交做了什么。
+
+**⚠️ 重要：避免中文乱码**
+
+如果提交信息包含中文，可能会在 GitHub 上显示为乱码。解决方法：
+
+**方法一：设置 Git 编码（推荐）**
+
+在提交前，先设置 Git 使用 UTF-8 编码：
+
+```bash
+# 设置提交信息编码为 UTF-8
+git config --global i18n.commitencoding utf-8
+
+# 设置日志输出编码为 UTF-8
+git config --global i18n.logoutputencoding utf-8
+```
+
+**方法二：使用英文提交信息（最简单）**
+
+如果不想处理编码问题，可以使用英文提交信息：
+
+```bash
+git commit -m "Initial commit: Personal Wardrobe System"
+```
+
+**方法三：在 PowerShell 中提交（推荐 Windows 用户）**
+
+PowerShell 对中文支持更好，建议使用 PowerShell 而不是 CMD：
+
+```bash
+# 在 PowerShell 中执行
+git commit -m "Initial commit: 个人电子衣柜系统"
+```
 
 #### 步骤 5: 连接到 GitHub 仓库
 
@@ -535,6 +583,72 @@ git push -u origin main
   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
   ```
+
+### 问题 8: 提交信息在 GitHub 上显示为乱码
+
+**错误**: 提交信息显示为 `涓汉鑾靛琉琛f煖绯荤粺` 等乱码，而不是正常的中文
+
+**原因**: Git 在 Windows 上默认使用的编码与 GitHub 不匹配，导致中文提交信息显示为乱码
+
+**解决方案**:
+
+1. **设置 Git 编码（推荐，永久解决）**：
+   ```bash
+   # 设置提交信息编码为 UTF-8
+   git config --global i18n.commitencoding utf-8
+   
+   # 设置日志输出编码为 UTF-8
+   git config --global i18n.logoutputencoding utf-8
+   ```
+   设置后，之后的提交就不会再出现乱码了。
+
+2. **使用 PowerShell 而不是 CMD**：
+   - PowerShell 对中文支持更好
+   - 建议在 PowerShell 中执行 Git 命令
+
+3. **使用英文提交信息（最简单）**：
+   ```bash
+   git commit -m "Initial commit: Personal Wardrobe System"
+   ```
+   如果不想处理编码问题，直接使用英文提交信息。
+
+4. **修复已提交的乱码信息（可选）**：
+   
+   如果已经提交了乱码信息，可以修改最近的提交信息。**详细步骤**：
+   
+   **步骤 1：修改最近的提交信息**
+   ```bash
+   git commit --amend -m "Initial commit: 个人电子衣柜系统"
+   ```
+   这个命令会修改最近一次提交的信息。
+   
+   **步骤 2：强制推送到 GitHub**
+   ```bash
+   git push -f origin main
+   ```
+   或者：
+   ```bash
+   git push -f
+   ```
+   
+   **⚠️ 重要警告**：
+   - `git push -f` 是强制推送，会覆盖 GitHub 上的提交历史
+   - 如果其他人已经克隆了你的仓库，他们的本地仓库会与远程不一致
+   - **只在你确定没有其他人使用这个仓库时使用**
+   - 如果是个人项目，通常可以安全使用
+   
+   **如果修改多个提交信息（高级）**：
+   如果你想修改多个提交信息，需要使用 `git rebase`：
+   ```bash
+   # 修改最近 3 次提交
+   git rebase -i HEAD~3
+   ```
+   这会打开编辑器，将需要修改的提交前的 `pick` 改为 `reword`，然后保存退出。
+
+**预防措施**：
+- ✅ 在配置 Git 时就设置好编码（见"配置 Git"部分）
+- ✅ 使用 PowerShell 执行 Git 命令
+- ✅ 如果担心编码问题，使用英文提交信息
 
 ---
 
