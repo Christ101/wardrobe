@@ -637,13 +637,63 @@ git push -u origin main
    - **只在你确定没有其他人使用这个仓库时使用**
    - 如果是个人项目，通常可以安全使用
    
-   **如果修改多个提交信息（高级）**：
-   如果你想修改多个提交信息，需要使用 `git rebase`：
+   **如果修改历史提交信息（不是最近的提交）**：
+   
+   如果你的乱码提交不是最近的提交，需要使用 `git rebase` 来修改历史提交：
+   
+   **步骤 1：查看提交历史**
    ```bash
-   # 修改最近 3 次提交
-   git rebase -i HEAD~3
+   git log --oneline
    ```
-   这会打开编辑器，将需要修改的提交前的 `pick` 改为 `reword`，然后保存退出。
+   找到乱码的提交，记住它的位置（是第几个提交）。
+   
+   **步骤 2：开始交互式 rebase**
+   ```bash
+   # 如果要修改所有提交（包括第一个），使用：
+   git rebase -i --root
+   
+   # 或者，如果要修改最近 N 个提交，使用：
+   git rebase -i HEAD~N
+   # 例如：git rebase -i HEAD~3 表示修改最近 3 个提交
+   ```
+   
+   **步骤 3：在编辑器中修改**
+   
+   会打开一个编辑器（通常是 vim 或你配置的默认编辑器），显示类似：
+   ```
+   pick 98d3534 Initial commit: 涓汉鐢靛瓙琛f煖绯荤粺
+   pick b69a356 Initial commit: 个人电子衣柜系统
+   ```
+   
+   将需要修改的提交前的 `pick` 改为 `reword`（或简写 `r`）：
+   ```
+   reword 98d3534 Initial commit: 涓汉鐢靛瓙琛f煖绯荤粺
+   pick b69a356 Initial commit: 个人电子衣柜系统
+   ```
+   
+   保存并关闭编辑器（vim 中：按 `Esc`，输入 `:wq`，按回车）。
+   
+   **步骤 4：输入新的提交信息**
+   
+   Git 会再次打开编辑器，让你输入新的提交信息。删除旧信息，输入：
+   ```
+   Initial commit: 个人电子衣柜系统
+   ```
+   保存并关闭编辑器。
+   
+   **步骤 5：强制推送**
+   ```bash
+   git push -f origin main
+   ```
+   
+   **⚠️ 注意事项**：
+   - 如果使用 vim 编辑器不熟悉，可以设置 Git 使用其他编辑器：
+     ```bash
+     git config --global core.editor "code --wait"  # 使用 VS Code
+     # 或
+     git config --global core.editor "notepad"      # 使用记事本
+     ```
+   - 执行 `git push -f` 会覆盖 GitHub 上的历史，请谨慎使用
 
 **预防措施**：
 - ✅ 在配置 Git 时就设置好编码（见"配置 Git"部分）
