@@ -392,31 +392,40 @@ git push -u origin main
 
 这是**最重要的一步**！
 
-1. 在 **"Environment Variables"** 部分，点击 **"Add"** 或直接输入
+1. 在 **"Environment Variables"** 部分，你会看到一个表格，有两列：**Key** 和 **Value**
 
 2. 添加第一个环境变量：
-   - **Name**: `NEXT_PUBLIC_SUPABASE_URL`
-   - **Value**: 你的 Supabase Project URL
+   - 在 **Key** 列输入：`NEXT_PUBLIC_SUPABASE_URL`
+   - 在 **Value** 列输入：你的 Supabase Project URL
      - 获取方式：Supabase Dashboard > Settings > API > Project URL
-     - 格式类似：`https://xxxxx.supabase.co`
-   - **Environment**: 勾选所有三个（Production、Preview、Development）
+     - 格式类似：`https://abcdefghijklmnop.supabase.co`
+     - **注意**：这是你的项目 URL，不是示例，需要替换成实际的 URL
+   - **注意**：新版本的 Vercel 可能默认应用到所有环境（Production、Preview、Development）
+   - 如果看到环境选择选项，确保勾选所有三个环境
 
-3. 点击 **"Add"** 添加
-
-4. 添加第二个环境变量：
-   - **Name**: `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - **Value**: 你的 Supabase Anon Key
-     - 获取方式：Supabase Dashboard > Settings > API > anon public
-     - 格式类似：`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
-   - **Environment**: 勾选所有三个（Production、Preview、Development）
-
-5. 点击 **"Add"** 添加
+3. 添加第二个环境变量：
+   - 点击 **"Add More"** 按钮（带加号图标的按钮）
+   - 在 **Key** 列输入：`NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - 在 **Value** 列输入：你的 Supabase API Key
+     - 获取方式：Supabase Dashboard > Settings > API
+     - **重要**：Supabase 现在有两种 API keys：
+       - **Legacy anon key**（旧版，推荐使用）：
+         - 在 "Legacy anon, service_role API keys" 标签页中
+         - 格式类似：`eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvdXJwcm9qZWN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2NDUxMjM0NTYsImV4cCI6MTk2MDcwOTQ1Nn0.abcdefghijklmnopqrstuvwxyz1234567890`
+         - **推荐使用这个**，因为当前代码使用的是 Legacy anon key
+       - **Publishable key**（新版）：
+         - 在 "Publishable and secret API keys" 标签页中
+         - 格式类似：`sb_publ_1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p`
+         - 如果使用新版 key，需要更新代码配置
+     - 点击 "Copy" 按钮复制 key
+   - 如果看到环境选择选项，确保勾选所有三个环境
 
 **重要提示**：
 - ✅ 确保变量名拼写正确（注意大小写）
 - ✅ 值不要包含引号
 - ✅ 复制时注意不要有多余的空格
-- ✅ 两个环境变量都要勾选所有环境
+- ✅ 如果界面中有环境选择选项，确保选择所有环境（Production、Preview、Development）
+- ⚠️ **注意**：Vercel 界面可能会更新，如果界面与文档描述不同，环境变量默认会应用到所有环境，通常不需要额外配置
 
 ### 步骤 5: 部署
 
