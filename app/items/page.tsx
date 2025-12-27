@@ -8,6 +8,17 @@ import { uploadImage, getSignedUrl, deleteImage } from '@/lib/storage';
 import { createClient } from '@/lib/supabase/client';
 import { generateYAMLText, generateJSON, generateTXT, copyToClipboard, downloadFile } from '@/lib/export';
 
+function toStringArray(v: unknown): string[] {
+  if (Array.isArray(v)) return v.filter(Boolean).map(String);
+  if (typeof v === "string") {
+    const s = v.trim();
+    if (!s) return [];
+    return s.split(/[,，]/).map((x) => x.trim()).filter(Boolean);
+  }
+  return [];
+}
+
+
 export default function ItemsPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +38,7 @@ export default function ItemsPage() {
     color_secondary: '',
     size: '',
     status: 'clean' as ItemStatus,
-    care_tags: '',
+    care_tags: [] as string[],
     image: null as File | null,
   };
   const [form, setForm] = useState(formData);
@@ -141,7 +152,7 @@ export default function ItemsPage() {
           color_secondary: form.color_secondary || undefined,
           size: form.size || undefined,
           status: form.status,
-          care_tags: form.care_tags || undefined,
+          care_tags: form.care_tags && form.care_tags.length > 0 ? form.care_tags.join(', ') : undefined,
           image_path: imagePath || editingItem.image_path,
         });
       } else {
@@ -153,7 +164,7 @@ export default function ItemsPage() {
           color_secondary: form.color_secondary || undefined,
           size: form.size || undefined,
           status: form.status,
-          care_tags: form.care_tags || undefined,
+          care_tags: form.care_tags && form.care_tags.length > 0 ? form.care_tags.join(', ') : undefined,
           image_path: imagePath,
         });
       }
@@ -177,7 +188,7 @@ export default function ItemsPage() {
       color_secondary: item.color_secondary || '',
       size: item.size || '',
       status: item.status,
-      care_tags: item.care_tags || '',
+      care_tags: toStringArray(item.care_tags),
       image: null,
     });
     setShowModal(true);
@@ -429,8 +440,8 @@ export default function ItemsPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">洗涤标签</label>
                   <input
                     type="text"
-                    value={form.care_tags}
-                    onChange={(e) => setForm({ ...form, care_tags: e.target.value })}
+                    value={(form.care_tags ?? []).join(",")}
+                    onChange={(e) => setForm({ ...form, care_tags: toStringArray(e.target.value) })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   />
                 </div>
