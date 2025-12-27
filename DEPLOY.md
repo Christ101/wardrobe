@@ -647,7 +647,26 @@ git push -u origin main
    ```
    找到乱码的提交，记住它的位置（是第几个提交）。
    
-   **步骤 2：开始交互式 rebase**
+   **步骤 2：处理未暂存的更改**
+   
+   ⚠️ **重要**：在执行 rebase 之前，必须先处理所有未暂存的更改！
+   
+   如果 `git rebase` 提示 "You have unstaged changes"，需要先：
+   
+   **方法一：提交更改（推荐）**
+   ```bash
+   git add .
+   git commit -m "你的提交信息"
+   ```
+   
+   **方法二：暂存更改（如果不想提交）**
+   ```bash
+   git stash
+   # 执行完 rebase 后，恢复更改：
+   git stash pop
+   ```
+   
+   **步骤 3：开始交互式 rebase**
    ```bash
    # 如果要修改所有提交（包括第一个），使用：
    git rebase -i --root
@@ -657,7 +676,7 @@ git push -u origin main
    # 例如：git rebase -i HEAD~3 表示修改最近 3 个提交
    ```
    
-   **步骤 3：在编辑器中修改**
+   **步骤 4：在编辑器中修改**
    
    会打开一个编辑器（通常是 vim 或你配置的默认编辑器），显示类似：
    ```
@@ -673,7 +692,7 @@ git push -u origin main
    
    保存并关闭编辑器（vim 中：按 `Esc`，输入 `:wq`，按回车）。
    
-   **步骤 4：输入新的提交信息**
+   **步骤 5：输入新的提交信息**
    
    Git 会再次打开编辑器，让你输入新的提交信息。删除旧信息，输入：
    ```
@@ -681,7 +700,7 @@ git push -u origin main
    ```
    保存并关闭编辑器。
    
-   **步骤 5：强制推送**
+   **步骤 6：强制推送**
    ```bash
    git push -f origin main
    ```
