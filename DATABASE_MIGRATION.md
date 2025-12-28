@@ -189,3 +189,35 @@ ALTER TABLE outfit_items ADD CONSTRAINT outfit_items_slot_check
 
 完成以上步骤后，数据库迁移就完成了！🎉
 
+---
+
+## 🔧 修复穿搭保存失败问题（RLS 策略）
+
+**问题：** 保存穿搭时出现错误：`new row violates row-level security policy for table "outfit_items"`
+
+**原因：** `outfit_items` 表缺少 RLS（Row Level Security）策略。
+
+**解决方案：** 执行 `FIX_RLS_POLICIES.sql` 文件中的 SQL 语句。
+
+### 操作步骤：
+
+1. 在 Supabase SQL Editor 中打开 `FIX_RLS_POLICIES.sql` 文件（或直接复制文件内容）
+2. 复制整个文件内容到 SQL Editor
+3. 点击 **"Run"** 执行
+4. 等待执行完成，应该看到 "Success" 提示
+
+**重要：** 这个 SQL 文件会：
+- 为 `outfit_items` 表创建完整的 RLS 策略（查看、插入、更新、删除）
+- 确保 `outfits` 表也有完整的 RLS 策略
+- 策略确保用户只能操作自己的穿搭数据
+
+执行完成后，穿搭保存功能应该可以正常工作了！✅
+
+### 快速操作：
+
+1. 打开 Supabase Dashboard → SQL Editor
+2. 复制 `FIX_RLS_POLICIES.sql` 文件的全部内容
+3. 粘贴到 SQL Editor
+4. 点击 **"Run"** 执行
+5. 看到 "Success" 提示即完成
+
