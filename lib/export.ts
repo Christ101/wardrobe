@@ -71,7 +71,7 @@ function convertToExportItem(item: Item): ExportItem {
     name: item.name || undefined,
     category: item.category,
     layer: item.layer || undefined,
-    subcategory: undefined, // 如果数据库中有这个字段，需要从 item 中获取
+    subcategory: item.subcategory || undefined, // P1-2: 支持子分类
     color: item.color_primary || undefined,
     color_secondary: item.color_secondary || undefined,
     size: item.size || undefined,

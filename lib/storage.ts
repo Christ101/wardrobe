@@ -44,3 +44,23 @@ export async function deleteImage(filePath: string): Promise<void> {
   }
 }
 
+// P1-3: 上传 HTML 文件（商品介绍）
+export async function uploadHTML(userId: string, itemId: string, file: File): Promise<string> {
+  const supabase = createClient();
+  const filePath = `${userId}/items/${itemId}/detail.html`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('wardrobe')
+    .upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: true,
+      contentType: 'text/html',
+    });
+
+  if (uploadError) {
+    throw new Error(`上传 HTML 失败: ${uploadError.message}`);
+  }
+
+  return filePath;
+}
+

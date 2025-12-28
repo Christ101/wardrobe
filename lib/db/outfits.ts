@@ -1,7 +1,7 @@
 import { createClient } from '../supabase/client';
 import { Item } from './items';
 
-export type OutfitSlot = 'base' | 'mid' | 'outer' | 'bottom' | 'shoes' | 'socks' | 'accessory';
+export type OutfitSlot = 'base' | 'mid' | 'outer' | 'bottom' | 'bottom_base' | 'shoes' | 'socks' | 'accessory'; // P0-5: 新增 bottom_base
 
 export interface Outfit {
   id: string;

@@ -12,7 +12,8 @@ const slots: Array<{ key: OutfitSlot; label: string; category?: ItemCategory }> 
   { key: 'base', label: '基础层', category: 'top' },
   { key: 'mid', label: '中间层', category: 'top' },
   { key: 'outer', label: '外套', category: 'outer' },
-  { key: 'bottom', label: '下装', category: 'bottom' },
+  { key: 'bottom', label: '下装（外层）', category: 'bottom' },
+  { key: 'bottom_base', label: '下装-基础层（可选）', category: 'bottom' }, // P0-5: 新增下装基础层
   { key: 'shoes', label: '鞋子', category: 'shoes' },
   { key: 'socks', label: '袜子', category: 'socks' },
   { key: 'accessory', label: '配饰', category: 'accessory' },
@@ -25,6 +26,7 @@ export default function BuilderPage() {
     mid: null,
     outer: null,
     bottom: null,
+    bottom_base: null, // P0-5: 新增下装基础层
     shoes: null,
     socks: null,
     accessory: null,
@@ -104,6 +106,7 @@ export default function BuilderPage() {
         mid: null,
         outer: null,
         bottom: null,
+        bottom_base: null, // P0-5: 新增下装基础层
         shoes: null,
         socks: null,
         accessory: null,
@@ -126,6 +129,10 @@ export default function BuilderPage() {
       if (slotConfig.category && item.category !== slotConfig.category) return false;
       if (slot === 'base' || slot === 'mid' || slot === 'outer') {
         return item.layer === slot || item.category === 'top' || item.category === 'outer';
+      }
+      // P0-5: bottom_base 筛选逻辑（下装且为基础层，或下装无层次）
+      if (slot === 'bottom_base') {
+        return item.category === 'bottom' && (item.layer === 'base' || !item.layer);
       }
       return true;
     });

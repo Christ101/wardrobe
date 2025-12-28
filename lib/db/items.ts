@@ -9,6 +9,7 @@ export interface Item {
   owner_id: string;
   category: ItemCategory;
   layer?: ItemLayer;
+  subcategory?: string; // 子分类（P1-2）
   name?: string;
   color_primary?: string;
   color_secondary?: string;
@@ -16,6 +17,7 @@ export interface Item {
   status: ItemStatus;
   care_tags?: string | string[]; // 支持字符串或数组
   image_path?: string;
+  detail_html_path?: string; // 商品介绍 HTML 文件路径（P1-3）
   created_at?: string;
   updated_at?: string;
 }
@@ -23,6 +25,8 @@ export interface Item {
 export async function getItems(filters?: {
   category?: ItemCategory;
   status?: ItemStatus;
+  subcategory?: string; // P1-2: 子分类筛选
+  care_tags?: string[]; // P0-2: 标签筛选（OR 逻辑）
 }): Promise<Item[]> {
   const supabase = createClient();
   let query = supabase
@@ -35,6 +39,15 @@ export async function getItems(filters?: {
   }
   if (filters?.status) {
     query = query.eq('status', filters.status);
+  }
+  if (filters?.subcategory) {
+    query = query.eq('subcategory', filters.subcategory);
+  }
+  // P0-2: care_tags 筛选（OR 逻辑：任一标签匹配即可）
+  if (filters?.care_tags && filters.care_tags.length > 0) {
+    // Supabase 数组字段筛选：使用 .overlaps() 或 .contains()
+    // 这里使用 .overlaps() 实现 OR 逻辑
+    query = query.overlaps('care_tags', filters.care_tags);
   }
 
   const { data, error } = await query;
