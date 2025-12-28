@@ -127,6 +127,7 @@ export async function createOutfit(
       outfit_id: newOutfit.id,
       item_id: item.item_id,
       slot: item.slot,
+      owner_id: user.id, // 添加 owner_id（如果表有该字段）
     }));
 
     const { error: itemsError } = await supabase
@@ -176,10 +177,17 @@ export async function updateOutfit(
     }
 
     if (items.length > 0) {
+      // 获取当前用户 ID
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('未登录');
+      }
+
       const outfitItems = items.map(item => ({
         outfit_id: id,
         item_id: item.item_id,
         slot: item.slot,
+        owner_id: user.id, // 添加 owner_id（如果表有该字段）
       }));
 
       const { error: insertError } = await supabase

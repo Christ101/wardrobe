@@ -221,3 +221,29 @@ ALTER TABLE outfit_items ADD CONSTRAINT outfit_items_slot_check
 4. 点击 **"Run"** 执行
 5. 看到 "Success" 提示即完成
 
+---
+
+## 🔧 修复 "owner_id" 字段错误
+
+**问题：** 保存穿搭时出现错误：`null value in column "owner_id" of relation "outfit_items" violates not-null constraint`
+
+**原因：** `outfit_items` 表有 `owner_id` 字段且不能为 null，但插入时没有传入该值。
+
+**解决方案：** 执行 `FIX_OUTFIT_ITEMS_OWNER_ID.sql` 文件中的 SQL 语句。
+
+### 操作步骤：
+
+1. 在 Supabase SQL Editor 中打开 `FIX_OUTFIT_ITEMS_OWNER_ID.sql` 文件
+2. 复制整个文件内容到 SQL Editor
+3. 点击 **"Run"** 执行
+4. 等待执行完成，应该看到 "Success" 或 "已创建触发器自动填充 owner_id" 的提示
+
+**重要：** 这个 SQL 文件会：
+- 检查 `outfit_items` 表是否有 `owner_id` 字段
+- 如果有，创建一个触发器自动从 `outfits` 表获取 `owner_id` 并填充
+- 这样即使代码中没有传入 `owner_id`，数据库也会自动填充
+
+**注意：** 代码已经更新，会在插入时传入 `owner_id`，但触发器可以作为双重保险。
+
+执行完成后，穿搭保存功能应该可以正常工作了！✅
+
