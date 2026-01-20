@@ -1,5 +1,5 @@
 # 个人电子衣柜系统
-
+# (还得再优化下，在线版太卡了，准备推倒重做一个本地版...202601)
 一个基于 Next.js + Supabase 的现代化个人电子衣柜管理系统，帮助你管理衣物、搭配穿搭、规划一周穿搭计划。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
